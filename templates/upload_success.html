@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+
+{% block js %}
+{% endblock %}
+
+
+{% block main %}
+
+<h2>Congratulations!</h2>
+<p>Your job application has been submitted successfully. You can now de-authorize
+this app.</p>
+
+<a class='btn btn-primary' href="{{ url_for('logout') }}">De-authorize/ Logout</a>
+
+{% endblock %}

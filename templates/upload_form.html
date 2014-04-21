@@ -6,30 +6,43 @@
 
 
 {% block main %}
-<form action="./" method='POST' enctype="multipart/form-data">
-    <p>
-        <input type="text" name="first_name" placeholder='First Name' required>
-    </p>
 
-    <p>
-        <input type="text" name="last_name" placeholder='Last Name' required>
-    </p>
+<p>Use form below to upload your application form:</p>
 
-    <p>
-        <input type="url" name="projects_url" placeholder='Project url' required>
-    </p>
+<form id='upload_form' action="./" method='POST' enctype="multipart/form-data" role="form">
+    <div class="form-group">
+        <label> First Name: <br>
+            <input class="form-control" type="text" name="first_name" placeholder='First Name' required autofocus>
+        </label>
+    </div>
 
-    <p>
-        <input type="url" name="code_url" placeholder='Code Url' required>
-    </p>
+    <div class="form-group">
+        <label> Last Name: <br>
+        <input class="form-control" type="text" name="last_name" placeholder='Last Name' required>
+        </label>
+    </div>
 
-    <p>
-        Resume: <input type="file" name='resume'>
-    </p>
-    <p>
-        <input type="submit">
-    </p>
+    <div class="form-group">
+        <label> Project Url: <br>
+        <input class="form-control" type="url" name="projects_url" placeholder='Project url' required>
+        </label>
+    </div>
 
+    <div class="form-group">
+        <label> Code Url: <br>
+        <input class="form-control" type="url" name="code_url" placeholder='Code Url' required>
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label> Resume: <br>
+        <input type="file" name='resume'>
+        </label>
+    </div>
+    <div class="form-group">
+        <input class='btn btn-primary' type="submit"
+         onclick="document.getElementById('upload_form').submit(); this.disabled = 'disabled';">
+    </div>
 </form>
 
 {% endblock %}

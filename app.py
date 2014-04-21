@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import urllib
+from urllib import urlencode
 import uuid
 
 from flask import (Flask, render_template, request, redirect, url_for, session,
-    abort)
+    abort, flash)
 from flask.json import jsonify
 
 import requests
@@ -29,12 +29,12 @@ def auth_agiliq():
     """Redirect the user to the OAuth provider (i.e. Agiliq)
     using an URL with a few key OAuth parameters."""
     session['state'] = uuid.uuid1()
-    params = {
+    params = urlencode({
         'client_id': AGILIQ['CLIENT_ID'],
         'redirect_uri': AGILIQ['CALLBACK_URL'],
         'state': session['state'],
-    }
-    auth_url = AGILIQ['AUTHORIZATION_BASE_URL'] + '?' + urllib.urlencode(params)
+    })
+    auth_url = '%s?%s' % (AGILIQ['AUTHORIZATION_BASE_URL'], params)
     return redirect(auth_url)
 
 
@@ -78,15 +78,18 @@ def callback_agiliq():
 def upload_resume():
     """Handles the resume upload functionality."""
     access_token = session.get('access_token', '')
+
     if not access_token:
-       abort(401)
+        abort(401)
 
-    params = {
+    params = urlencode({
        'access_token': access_token
-    }
-    # upload_url = AGILIQ['UPLOAD_URL'] + '?' + urllib.urlencode(params)
+    })
 
-    upload_url = 'http://httpbin.org/post' + '?' + urllib.urlencode(params)
+    # for testing only
+    AGILIQ['UPLOAD_URL'] = 'http://httpbin.org/post'
+
+    upload_url = '%s?%s' % (AGILIQ['UPLOAD_URL'], params)
 
     if request.method == 'POST':
         payload = {
@@ -96,11 +99,17 @@ def upload_resume():
             'code_url': request.form['code_url'],
         }
 
-        file = request.files['resume']
-        if file and allowed_file(file.filename):
-            res = requests.post(upload_url, files={'resume': file.stream}, data=payload)
-            return res.content
-        return jsonify(payload)
+        uploaded_file = request.files['resume']
+        if uploaded_file and allowed_file(uploaded_file.filename):
+            files = {
+                'resume': (uploaded_file.filename, uploaded_file.stream,
+                    uploaded_file.mimetype)
+            }
+            res = requests.post(upload_url, files=files, data=payload)
+            return render_template('upload_success.html')
+
+        flash('Application submission failed! Try again.')
+        return render_template('upload_form.html')
 
     return render_template('upload_form.html')
 
