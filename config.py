@@ -11,8 +11,6 @@ AGILIQ = {
 
 SECRET_KEY = environ.get('SECRET_KEY')
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'doc', 'docx', 'md'])
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+ALLOWED_EXTENSIONS = ['txt', 'rtf', 'odf', 'ods', 'gnumeric', 'abw', 'doc',
+    'docx', 'xls', 'xlsx', 'jpg', 'jpe', 'jpeg', 'png', 'gif', 'svg', 'bmp',
+    'csv', 'ini', 'json', 'plist', 'xml', 'yaml', 'yml', 'pdf', 'md', 'rst']

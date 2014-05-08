@@ -5,14 +5,16 @@ import uuid
 
 from flask import (Flask, render_template, request, redirect, url_for, session,
     abort, flash)
-from flask.json import jsonify
+from werkzeug.utils import secure_filename
 
 import requests
 
-from config import AGILIQ, allowed_file, SECRET_KEY
+from config import AGILIQ, SECRET_KEY
+from forms import ResumeUploadForm
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # 16MB
 
 ###
 # Application Routing
@@ -52,13 +54,13 @@ def callback_agiliq():
     state = request.args.get('state', '')
 
     if not code:
-        abort(401)
+        abort(400)
 
     try:
         if str(state) != str(session['state']):
-            abort(401)
+            abort(400)
     except KeyError:
-        abort(401)
+        abort(400)
 
     payload = {
         'client_id': AGILIQ['CLIENT_ID'],
@@ -77,41 +79,47 @@ def callback_agiliq():
 @app.route('/upload/', methods=['GET', 'POST'])
 def upload_resume():
     """Handles the resume upload functionality."""
-    access_token = session.get('access_token', '')
+    access_token = session.get('access_token', None)
 
     if not access_token:
-        abort(401)
+        abort(400)
+
+    # for testing only
+    AGILIQ['UPLOAD_URL'] = 'http://requestb.in/1jxeysb1'
 
     params = urlencode({
        'access_token': access_token
     })
 
-    # for testing only
-    AGILIQ['UPLOAD_URL'] = 'http://httpbin.org/post'
-
     upload_url = '%s?%s' % (AGILIQ['UPLOAD_URL'], params)
 
-    if request.method == 'POST':
+    form = ResumeUploadForm()
+
+    if form.validate_on_submit():
         payload = {
-            'first_name': request.form['first_name'],
-            'last_name': request.form['last_name'],
-            'projects_url': request.form['projects_url'],
-            'code_url': request.form['code_url'],
+            'first_name': form.first_name.data,
+            'last_name': form.last_name.data,
+            'projects_url': form.projects_url.data,
+            'code_url': form.code_url.data,
         }
-
-        uploaded_file = request.files['resume']
-        if uploaded_file and allowed_file(uploaded_file.filename):
-            files = {
-                'resume': (uploaded_file.filename, uploaded_file.stream,
-                    uploaded_file.mimetype)
-            }
+        resume_data = form.resume.data
+        filename = secure_filename(resume_data.filename)
+        files = {
+            'resume': (filename, resume_data.read(), resume_data.mimetype)
+        }
+        try:
             res = requests.post(upload_url, files=files, data=payload)
-            return render_template('upload_success.html')
+            return redirect(url_for('upload_resume_success'))
+        except requests.exceptions.RequestException as e:
+            flash('Unable to upload your resume! Try again.')
+            return render_template('upload_form.html', form=form)
 
-        flash('Application submission failed! Try again.')
-        return render_template('upload_form.html')
+    return render_template('upload_form.html', form=form)
 
-    return render_template('upload_form.html')
+
+@app.route('/upload/success/', methods=['GET'])
+def upload_resume_success():
+    return render_template('upload_success.html')
 
 
 @app.after_request

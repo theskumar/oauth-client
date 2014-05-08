@@ -1,18 +1,12 @@
 # ----------------------
 # Flask
 # ----------------------
-flask
-requests
-
-
-# ----------------------
-# Testing
-# ----------------------
-mock
-
+Flask==0.10.1
+requests==2.2.1
+Flask-WTF==0.9.5
 
 # ----------------------
 # Production Server
 # ----------------------
-gevent
-gunicorn
+gevent==1.0.1
+gunicorn==18.0
