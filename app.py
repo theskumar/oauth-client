@@ -84,9 +84,6 @@ def upload_resume():
     if not access_token:
         abort(400)
 
-    # for testing only
-    AGILIQ['UPLOAD_URL'] = 'http://requestb.in/1jxeysb1'
-
     params = urlencode({
        'access_token': access_token
     })
