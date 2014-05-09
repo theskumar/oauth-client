@@ -4,6 +4,7 @@ from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from config import ALLOWED_EXTENSIONS
 
+
 class ResumeUploadForm(Form):
     first_name = TextField('First Name', [
             validators.required(),

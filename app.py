@@ -4,7 +4,7 @@ from urllib import urlencode
 import uuid
 
 from flask import (Flask, render_template, request, redirect, url_for, session,
-    abort, flash)
+                   abort, flash)
 from werkzeug.utils import secure_filename
 
 import requests
@@ -14,12 +14,12 @@ from forms import ResumeUploadForm
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # 16MB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+
 
 ###
 # Application Routing
 ###
-
 @app.route('/')
 def home():
     """Render website's home page. """
@@ -84,9 +84,7 @@ def upload_resume():
     if not access_token:
         abort(400)
 
-    params = urlencode({
-       'access_token': access_token
-    })
+    params = urlencode({'access_token': access_token})
 
     upload_url = '%s?%s' % (AGILIQ['UPLOAD_URL'], params)
 
@@ -107,7 +105,7 @@ def upload_resume():
         try:
             res = requests.post(upload_url, files=files, data=payload)
             return redirect(url_for('upload_resume_success'))
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             flash('Unable to upload your resume! Try again.')
             return render_template('upload_form.html', form=form)
 
